@@ -8,8 +8,8 @@ export default function App() {
   const [message, setMessage] = useState("");
   const linkRef = useRef(null);
 
-  const apiUrl = "http://localhost:8080/details/";
-  const downloadUrlBase = "http://localhost:8080/download/";
+  const apiUrl = "https://mp3ninjaapi.ankit252.com.np/details/";
+  const downloadUrlBase = "https://mp3ninjaapi.ankit252.com.np/download/";
 
   const closePopup = () => {
     setPopup("");

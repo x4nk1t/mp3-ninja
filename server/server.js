@@ -1,17 +1,6 @@
 const express = require("express");
 const fs = require("fs");
 const ytdl = require("ytdl-core");
-const crypto = require("crypto");
-
-const sqlite = require("sqlite3").verbose();
-
-const db = new sqlite.Database("./tracks.db", (err) => {
-    if (err) {
-        return console.error(err);
-    }
-
-    console.log("Connected to sqlite db");
-});
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -36,18 +25,10 @@ app.get("/details/:youtubelink", (req, res) => {
     ytdl.getBasicInfo(link).then(videoInfo => {
         const songName = videoInfo.videoDetails.title.replace("/", "");
 
-        const trackId = createHash(youtubeId);
-        const fileToWrite = fs.createWriteStream("./downloaded/" + songName + ".mp3");
-
-        setSongNameToTrack(trackId, songName);
-
-        ytdl(link, {
-            filter: 'audioonly'
-        }).pipe(fileToWrite);
-
+        const trackId = createHash({url: link, songName: songName});
         const details = videoInfo.videoDetails;
 
-        details.trackId = createHash(youtubeId);
+        details.trackId = trackId;
 
         res.status(200).json(details);
     }).catch(error => {
@@ -56,52 +37,35 @@ app.get("/details/:youtubelink", (req, res) => {
 });
 
 app.get("/download/:trackid", async (req, res) => {
-
     const trackId = req.params.trackid;
+    
+    const details = dehash(trackId);
 
-    var fileName = await getSongNameFromTrack(trackId);
-
-    if (fileName == null) {
-        res.status(404).json({ error: 1, message: "File not found!" });
+    if(details.songName == null || details.url == null){
+        res.status(400).json({error: 1, message: "Invalid data!"});
         return;
     }
 
-    const exist = fs.existsSync("./downloaded/" + fileName + ".mp3");
+    const songName = details.songName;
+    const url = details.url;
+    res.setHeader("Content-Disposition", "attachment; filename=\""+ songName +".mp3\"");
 
-    if (exist) {
-        res.set("content-disposition", "attachment; filename="+ fileName +".mp3");
-        fs.createReadStream('./downloaded/' + fileName + '.mp3').pipe(res);
-    } else {
-        res.status(404).json({ error: 1, message: "File not found!" });
-    }
+    ytdl(url, {
+        filter: 'audioonly'
+    }).pipe(res);
 });
 
-function createHash(string) {
-    return crypto.createHash('md5').update(string).digest('hex');
+function createHash(object) {
+    return Buffer.from(JSON.stringify(object)).toString("base64");
 }
 
-function getSongNameFromTrack(trackId) {
-    return new Promise((resolve, reject) => {
-        db.get("SELECT * FROM tracks WHERE id=?", [trackId], (err, row) => {
-            if (err) {
-                reject(err);
-                return;
-            }
+function dehash(string){
+    const rawData =  Buffer.from(string, "base64").toString("ascii");
 
-            resolve(row.name);
-        });
-    });
-
-}
-
-function setSongNameToTrack(trackId, songName) {
-    return new Promise((resolve, reject) => {
-        db.run("INSERT INTO tracks(id, name) VALUES (?, ?)", [trackId, songName], (err) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve({ error: 0 });
-        });
-    });
+    try {
+        const parse =  JSON.parse(rawData);
+        return parse;
+    } catch {
+        return {songName: null, url: null};
+    }
 }
