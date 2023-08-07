@@ -29,8 +29,8 @@ export default function App() {
     const popup = <div className='popup'>
       <div className='popup-container'>
         <div className='x-button' onClick={closePopup}>X</div>
-        <img src={imageUrl} height={200} width={340} alt={videoTitle}/>
-        <p>{videoTitle}</p>
+        <img src={imageUrl} alt={videoTitle} className='video-thumbnail' />
+        <p className='video-title'>{videoTitle}</p>
         <a href={downloadUrlBase + trackId}>Download (mp3)</a>
       </div>
     </div>;
@@ -40,12 +40,16 @@ export default function App() {
 
   const validateLink = (url) => {
     if (url !== undefined || url !== '') {
-      var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\?v=)([^#&?]*).*/;
-      var match = url.match(regExp);
-      if (match && match[2].length === 11) {
-        return true;
+      var pattern = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+
+      // Match the pattern against the input link
+      var match = url.match(pattern);
+
+      if (match) {
+        var videoId = match[1];
+        return videoId;
       } else {
-        return false;
+        return null;
       }
     }
   }
@@ -60,14 +64,13 @@ export default function App() {
       return;
     }
 
-    const valid = validateLink(youtubeLink);
+    const videoId = validateLink(youtubeLink);
 
-    if (!valid) {
+    if (videoId == null) {
       setMessage("Please enter valid youtube link");
       return;
     }
 
-    const videoId = youtubeLink.split("?v=")[1];
     setMessage("Fetching details...");
 
     fetch(apiUrl + videoId)

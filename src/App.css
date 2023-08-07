@@ -84,9 +84,28 @@ footer {
   top: 20vh;
   background-color: white;
   border-radius: 20px;
-  height: fit-content;
   padding: 32px;
   font-size: 24px;
+  width: 50%;
+}
+
+@media only screen and (max-width: 600px)  {
+  .popup-container {
+    width: 80%;
+  }
+}
+
+.video-thumbnail {
+  height: 160px;
+  width: 250px;
+  padding: 20px;
+}
+
+.video-title {
+  height: 50px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 a {

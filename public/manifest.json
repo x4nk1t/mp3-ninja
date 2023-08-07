@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MP3Ninja",
+  "name": "Download MP3 from YouTubee",
   "icons": [
     {
       "src": "favicon.ico",
