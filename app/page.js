@@ -1,5 +1,6 @@
+'use client'
+
 import { useState } from 'react';
-import './App.css';
 import Footer from './components/footer';
 import { useRef } from 'react';
 
@@ -8,8 +9,8 @@ export default function App() {
   const [message, setMessage] = useState("");
   const linkRef = useRef(null);
 
-  const apiUrl = "https://mp3ninjaapi.ankit252.com.np/details/";
-  const downloadUrlBase = "https://mp3ninjaapi.ankit252.com.np/download/";
+  const apiUrl = "/api/details/";
+  const downloadUrlBase = "/api/download/";
 
   const closePopup = () => {
     setPopup("");
